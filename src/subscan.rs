@@ -34,10 +34,10 @@ mod types {
     }
 }
 
-pub async fn daily_stats(
+pub async fn active_wallets(
     client: Client<HttpsConnector<HttpConnector>>,
     network: &str,
-) -> Result<types::DailyRes> {
+) -> Result<u64> {
     let today = chrono::Utc::now();
     let args = types::DailyReqArgs {
         end: today.format("%Y-%m-%d").to_string(),
@@ -57,7 +57,6 @@ pub async fn daily_stats(
         .body(Body::from(body))?;
 
     let res = client.request(req).await.unwrap();
-
     if res.status() != 200 {
         bail!("subscan error: {}", res.status());
     }
@@ -65,5 +64,5 @@ pub async fn daily_stats(
     let body = hyper::body::to_bytes(res.into_body()).await.unwrap();
     let res: types::DailyRes = serde_json::from_slice(&body).unwrap();
 
-    Ok(res)
+    Ok(res.data.list[0].total.parse::<u64>().unwrap())
 }

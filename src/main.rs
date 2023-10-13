@@ -1,18 +1,25 @@
 use hyper::Client;
 use hyper_tls::HttpsConnector;
 
+mod coingecko;
 mod subscan;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let networks = vec!["nodle"];
+    // subscan ID, coingecko ID
+    let networks = vec![("nodle", "nodle-network")];
 
     let https = HttpsConnector::new();
     let client = Client::builder().build::<_, hyper::Body>(https);
 
     for network in networks {
-        let stats = subscan::daily_stats(client.clone(), network).await?;
-        println!("--- stats for {}\n{:?}", network, stats);
+        let wallets = subscan::active_wallets(client.clone(), network.0).await?;
+        let marketcap = coingecko::marketcap(client.clone(), network.1).await?;
+
+        println!(
+            "{}: {} wallets for a marketcap of ${}",
+            network.0, wallets, marketcap
+        );
     }
 
     Ok(())
