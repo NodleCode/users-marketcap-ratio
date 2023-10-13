@@ -49,17 +49,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let pending = networks
         .iter()
-        .map(|network| analyze_network(client.clone(), network.0, network.1))
-        .map(|analysis| async move {
-            std::thread::sleep(std::time::Duration::from_secs(1));
-            analysis.await
-        });
+        .map(|network| analyze_network(client.clone(), network.0, network.1));
 
-    // let results = futures::future::join_all(pending).await;
-    let results = pending.collect::<Vec<_>>();
+    let results = futures::future::join_all(pending).await;
 
     for result in results {
-        let analysis = result.await?;
+        let analysis = result?;
         println!(
             "{}: {} daily active wallets for a marketcap of ${} -> ratio {}",
             analysis.network, analysis.active_wallets, analysis.marketcap, analysis.ratio,

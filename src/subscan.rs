@@ -1,6 +1,8 @@
 use anyhow::{bail, Result};
 use hyper::{client::HttpConnector, Body, Client, Method, Request};
 use hyper_tls::HttpsConnector;
+use once_cell::sync::Lazy;
+use tokio::sync::Mutex;
 
 mod types {
     use serde::{Deserialize, Serialize};
@@ -34,10 +36,23 @@ mod types {
     }
 }
 
+static MUTEX: Lazy<Mutex<i64>> = Lazy::new(|| Mutex::new(0));
+
 pub async fn active_wallets(
     client: Client<HttpsConnector<HttpConnector>>,
     network: &str,
 ) -> Result<u64> {
+    // unfortunately subscan's API is very limited and I am not gonna
+    // pay hundreds of dollars to run a simple tiny script, as such
+    // we hack a rate limiting feature via the code below
+    let mut last = MUTEX.lock().await;
+    let now = chrono::Utc::now().timestamp();
+    if now - *last < 1 {
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    }
+    *last = now;
+    drop(last);
+
     let today = chrono::Utc::now();
     let args = types::DailyReqArgs {
         end: today.format("%Y-%m-%d").to_string(),

@@ -897,6 +897,7 @@ dependencies = [
  "futures",
  "hyper",
  "hyper-tls",
+ "once_cell",
  "serde",
  "serde_json",
  "tokio",
