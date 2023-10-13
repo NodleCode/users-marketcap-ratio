@@ -22,7 +22,7 @@ async fn analyze_network(
         coingecko::marketcap(client.clone(), coingecko_id)
     )?;
 
-    let ratio = marketcap / active_wallets as f64;
+    let ratio = active_wallets as f64 / marketcap;
 
     Ok(NetworkAnalysis {
         network: subscan_id.to_string(),
@@ -53,10 +53,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let results = futures::future::join_all(pending).await;
 
+    println!("network name, daily active wallets, marketcap (usd), ratio (daily active wallets / marketcap)");
     for result in results {
         let analysis = result?;
         println!(
-            "{}: {} daily active wallets for a marketcap of ${} -> ratio {}",
+            "{}, {}, {}, {}",
             analysis.network, analysis.active_wallets, analysis.marketcap, analysis.ratio,
         );
     }
