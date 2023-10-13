@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 use hyper::{client::HttpConnector, Client, Uri};
 use hyper_tls::HttpsConnector;
 
@@ -22,9 +22,10 @@ pub async fn marketcap(
 
     let body = hyper::body::to_bytes(req.into_body()).await?;
     if body.is_empty() {
-        bail!("empty body");
+        bail!("empty body for {}", network);
     }
 
-    let res: types::MarketRes = serde_json::from_slice(&body)?;
+    let res: types::MarketRes = serde_json::from_slice(&body)
+        .map_err(|e| anyhow!("failed to parse body for {}: {}", network, e))?;
     Ok(res.market_caps[0].1)
 }

@@ -14,6 +14,7 @@ struct NetworkAnalysis {
 
 async fn analyze_network(
     client: Client<HttpsConnector<HttpConnector>>,
+    network: &str,
     subscan_id: &str,
     coingecko_id: &str,
 ) -> Result<NetworkAnalysis> {
@@ -25,7 +26,7 @@ async fn analyze_network(
     let ratio = active_wallets as f64 / marketcap;
 
     Ok(NetworkAnalysis {
-        network: subscan_id.to_string(),
+        network: network.to_string(),
         active_wallets,
         marketcap,
         ratio,
@@ -34,14 +35,17 @@ async fn analyze_network(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    // subscan ID, coingecko ID
+    // name, subscan ID, coingecko ID
     let networks = vec![
-        ("nodle", "nodle-network"),
-        ("polkadot", "polkadot"),
-        ("kusama", "kusama"),
-        ("moonbeam", "moonbeam"),
-        ("astar", "astar"),
-        ("acala", "acala"),
+        ("nodle", "nodle", "nodle-network"),
+        ("polkadot", "polkadot", "polkadot"),
+        ("kusama", "kusama", "kusama"),
+        ("moonbeam", "moonbeam", "moonbeam"),
+        ("astar", "astar", "astar"),
+        ("acala", "acala", "acala"),
+        ("kilt", "spiritnet", "kilt-protocol"),
+        ("centrifuge", "centrifuge", "centrifuge"),
+        ("hydradx", "hydradx", "hydradx"),
     ];
 
     let https = HttpsConnector::new();
@@ -49,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let pending = networks
         .iter()
-        .map(|network| analyze_network(client.clone(), network.0, network.1));
+        .map(|network| analyze_network(client.clone(), network.0, network.1, network.2));
 
     let results = futures::future::join_all(pending).await;
 
