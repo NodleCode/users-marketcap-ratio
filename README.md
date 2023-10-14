@@ -15,7 +15,8 @@ astar, 97, 224288484.878444, 0.000000432478734040093
 acala, 39, 37234416.398917295, 0.0000010474180549029377
 ```
 
-Output is a CSV. You may run analysis yourself.
+Output is a CSV. You may run analysis yourself in Google Sheets or via ChatGPT. An example ratio visualization follows.
+![ratio visualization](./docs/chatgpt_example.png)
 
 ## Adding network
 Networks can be added by modifying the `main.rs` file by specifiying the network name, subscan API ID, and Coingecko ID.
