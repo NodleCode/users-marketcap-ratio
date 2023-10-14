@@ -26,6 +26,6 @@ pub async fn marketcap(
     }
 
     let res: types::MarketRes = serde_json::from_slice(&body)
-        .map_err(|e| anyhow!("failed to parse body for {}: {}", network, e))?;
+        .map_err(|e| anyhow!("failed to parse body for {}: {}\n{:?}", network, e, body))?;
     Ok(res.market_caps[0].1)
 }
